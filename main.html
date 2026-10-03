@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HARRY - Animator & Rigger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #030305;
+            --text-color: #ffffff;
+            --text-dim: #8a8a93;
+            --accent-cyan: #00e5ff;
+            --accent-cyan-glow: rgba(0, 229, 255, 0.4);
+            --card-bg: #0d0d12;
+            --border-color: #22222e;
+            --nav-bg: rgba(13, 13, 18, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        #cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, rgba(0, 0, 0, 0) 60%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            transform: translate(-50%, -50%);
+            will-change: transform;
+        }
+
+        .nav-wrapper {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 900px;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 12px 24px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        
+        .nav-tag {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--accent-cyan);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            background: rgba(255,255,255,0.03);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff88;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,255,136,0.6);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .nav-contact {
+            text-decoration: none;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color 0.3s;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .nav-contact:hover {
+            color: var(--text-color);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            text-align: center;
+            padding-top: 50px; 
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: 7rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+            text-shadow: 0 0 40px rgba(0, 229, 255, 0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--accent-cyan);
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .action-pills {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .pill-primary {
+            background: linear-gradient(135deg, #00e5ff 0%, #00b4d8 100%);
+            color: #000;
+            box-shadow: 0 10px 25px rgba(0, 229, 255, 0.3);
+        }
+
+        .pill-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 229, 255, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .pill-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+            border-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .pill-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 229, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 6rem 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        #about {
+            background: rgba(13, 13, 18, 0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 6rem;
+            backdrop-filter: blur(10px);
+            scroll-margin-top: 120px;
+        }
+
+        #about p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+        
+        #about p span {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            scroll-margin-top: 120px; 
+            margin-bottom: 4rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 229, 255, 0.4);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 255, 0.1);
+        }
+
+        .thumbnail {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            transition: opacity 0.4s, transform 0.4s;
+        }
+
+        .card:hover .thumbnail img {
+            opacity: 1;
+            transform: scale(1.08);
+        }
+
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 55px;
+            height: 55px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+            transition: transform 0.3s, background 0.3s;
+            z-index: 2;
+        }
+
+        .card:hover .play-btn {
+            transform: translate(-50%, -50%) scale(1.15);
+            background: #fff;
+        }
+
+        .play-btn-icon {
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 14px solid #000; 
+            margin-left: 4px; 
+            transition: border-left-color 0.3s;
+        }
+
+        .card-info {
+            padding: 1.5rem;
+            text-align: center;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.3) 100%);
+        }
+
+        .card-info h4 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 40px rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -45px;
+            right: 0;
+            color: #fff;
+            font-size: 32px;
+            cursor: pointer;
+            transition: color 0.3s;
+            font-weight: 300;
+        }
+        
+        .close-modal:hover {
+            color: var(--accent-cyan);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .hero-title { font-size: 5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 15px; border-radius: 20px; padding: 15px; }
+            .nav-wrapper { position: relative; top: 15px; }
+            .hero-title { font-size: 3.5rem; }
+            .showcase-grid { grid-template-columns: 1fr; }
+            .hero-section { padding-top: 20px; height: auto; min-height: 80vh; }
+            #cursor-glow { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <div id="cursor-glow"></div>
+
+    <div class="nav-wrapper">
+        <nav class="navbar">
+            <a href="#" class="nav-logo">HARRY <span class="nav-tag">ANIMATION LAB</span></a>
+            <div class="status">
+                <div class="status-dot"></div> AVAILABLE FOR WORK
+            </div>
+            <a href="https://discord.gg/dWpqyz5mJX" target="_blank" class="nav-contact">Discord: hady014</a>
+        </nav>
+    </div>
+
+    <header class="hero-section">
+        <h1 class="hero-title">HARRY</h1>
+        <div class="hero-subtitle">Animator & Rigger</div>
+        
+        <div class="action-pills">
+            <a href="#work" class="pill pill-primary">
+                See My Work 
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+            </a>
+            <a href="#about" class="pill pill-secondary">
+                About Me
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </a>
+            <a href="https://discord.gg/dWpqyz5mJX" target="_blank" class="pill pill-secondary">
+                Get In Touch
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2 11 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <section id="about">
+            <h2 class="section-title">Who is Harry?</h2>
+            <p>
+                I am an animator with <span>4 years of experience</span>. I specialize in <span>simple movements</span>, 
+                <span>combat sequences</span>, <span>cutscenes</span>, and rigorous <span>3D rigging</span>.
+            </p>
+        </section>
+
+        <h2 class="section-title">Featured Works</h2>
+        <div class="showcase-grid" id="work">
+            
+            <!-- Video 1 -->
+            <div class="card" onclick="openModal('fXCpG3e0Ays')">
+                <div class="thumbnail">
+                    <img alt="Animation Showcase 1" src="https://img.youtube.com/vi/fXCpG3e0Ays/hqdefault.jpg">
+                    <div class="play-btn"><div class="play-btn-icon"></div></div>
+                </div>
+                <div class="card-info">
+                    <h4>Showcase — 01</h4>
+                </div>
+            </div>
+
+            <!-- Video 2 -->
+            <div class="card" onclick="openModal('DpCQNYKaFPE')">
+                <div class="thumbnail">
+                    <img alt="Animation Showcase 2" src="https://img.youtube.com/vi/DpCQNYKaFPE/hqdefault.jpg">
+                    <div class="play-btn"><div class="play-btn-icon"></div></div>
+                </div>
+                <div class="card-info">
+                    <h4>Showcase — 02</h4>
+                </div>
+            </div>
+
+            <!-- Video 3 -->
+            <div class="card" onclick="openModal('_sXQZax7_9w')">
+                <div class="thumbnail">
+                    <img alt="Animation Showcase 3" src="https://img.youtube.com/vi/_sXQZax7_9w/hqdefault.jpg">
+                    <div class="play-btn"><div class="play-btn-icon"></div></div>
+                </div>
+                <div class="card-info">
+                    <h4>Showcase — 03</h4>
+                </div>
+            </div>
+
+            <!-- Video 4 -->
+            <div class="card" onclick="openModal('uK-Yp2XvpaA')">
+                <div class="thumbnail">
+                    <img alt="Animation Showcase 4" src="https://img.youtube.com/vi/uK-Yp2XvpaA/hqdefault.jpg">
+                    <div class="play-btn"><div class="play-btn-icon"></div></div>
+                </div>
+                <div class="card-info">
+                    <h4>Showcase — 04</h4>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="videoModal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="closeModal()">✕</div>
+            <!-- Empty src initially, updated on click -->
+            <iframe id="youtubePlayer" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        const cursorGlow = document.getElementById('cursor-glow');
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let glowX = window.innerWidth / 2;
+        let glowY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Smooth Lerp Animation for the glow to follow cursor fluidly
+        function animateGlow() {
+            glowX += (mouseX - glowX) * 0.15;
+            glowY += (mouseY - glowY) * 0.15;
+            
+            cursorGlow.style.transform = `translate(${glowX - 300}px, ${glowY - 300}px)`; 
+            requestAnimationFrame(animateGlow);
+        }
+        if (window.innerWidth > 768) {
+            animateGlow();
+        }
+
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let nodes = [];
+        const numNodes = 70; // Adjust for more or fewer rigging points
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            nodes = [];
+            
+            // Create "rigging" nodes
+            for (let i = 0; i < numNodes; i++) {
+                nodes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.4, // Slow movement
+                    vy: (Math.random() - 0.5) * 0.4,
+                    radius: Math.random() * 1.5 + 1
+                });
+            }
+        }
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+
+        function animateBones() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < nodes.length; i++) {
+                let n1 = nodes[i];
+                
+                // Update positions
+                n1.x += n1.vx;
+                n1.y += n1.vy;
+                
+                // Wrap around screen edges
+                if (n1.x < 0) n1.x = width;
+                if (n1.x > width) n1.x = 0;
+                if (n1.y < 0) n1.y = height;
+                if (n1.y > height) n1.y = 0;
+
+                // Draw the node
+                ctx.beginPath();
+                ctx.arc(n1.x, n1.y, n1.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.4)';
+                ctx.fill();
+
+                // Draw connecting "bones/wireframes"
+                for (let j = i + 1; j < nodes.length; j++) {
+                    let n2 = nodes[j];
+                    let dist = Math.hypot(n1.x - n2.x, n1.y - n2.y);
+                    
+                    if (dist < 120) { // Connect nodes that are close to each other
+                        ctx.beginPath();
+                        ctx.moveTo(n1.x, n1.y);
+                        ctx.lineTo(n2.x, n2.y);
+                        // Make line more transparent the further away they are
+                        ctx.strokeStyle = `rgba(0, 229, 255, ${0.2 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateBones);
+        }
+        animateBones();
+
+        const modal = document.getElementById('videoModal');
+        const player = document.getElementById('youtubePlayer');
+
+        function openModal(videoId) {
+            // Using youtube-nocookie.com to bypass configuration/restriction Error 153
+            player.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            player.src = ''; // Stops playback entirely
+            document.body.style.overflow = 'auto'; 
+        }
+
+        // Close on background click
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Close on ESC key press
+        document.addEventListener('keydown', function(e) {
+            if(e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
